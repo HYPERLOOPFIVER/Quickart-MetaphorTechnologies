@@ -1,228 +1,422 @@
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { doc, getDoc, updateDoc, collection, addDoc } from 'firebase/firestore';
-import { db, auth } from './Firebase';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from 'react';
+import { collection, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from './Firebase';
+import { getAuth } from 'firebase/auth';
+import './UserOrder.css';
 
-const OrderConfirmation = () => {
-  const [user] = useAuthState(auth);
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { orderIds, totalAmount, deliveryAddress } = location.state || {};
+const UserOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [cancelling, setCancelling] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const auth = getAuth();
 
   useEffect(() => {
-    if (!orderIds || !Array.isArray(orderIds)) {
-      navigate('/');
-      return;
-    }
-
     const fetchOrders = async () => {
       try {
-        setLoading(true);
-        const ordersData = [];
-        
-        for (const orderId of orderIds) {
-          const orderRef = doc(db, 'orders', orderId);
-          const orderSnap = await getDoc(orderRef);
-          
-          if (orderSnap.exists()) {
-            ordersData.push({
-              id: orderSnap.id,
-              ...orderSnap.data()
-            });
-          }
+        const userId = auth.currentUser?.uid;
+        if (!userId) {
+          setError("You must be logged in to view orders");
+          setLoading(false);
+          return;
         }
+
+        const ordersRef = collection(db, "orders");
+        const q = query(ordersRef, where("userId", "==", userId));
+        const querySnapshot = await getDocs(q);
         
-        setOrders(ordersData);
-      } catch (error) {
-        toast.error('Error fetching orders: ' + error.message);
-      } finally {
+        const fetchedOrders = [];
+        querySnapshot.forEach((doc) => {
+          fetchedOrders.push({ id: doc.id, ...doc.data() });
+        });
+        
+        // Sort orders by creation date (newest first)
+        fetchedOrders.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+        
+        setOrders(fetchedOrders);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching orders: ", err);
+        setError("Failed to load orders. Please try again later.");
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [orderIds, navigate]);
+  }, []);
 
-  const handleCancelOrder = async (orderId) => {
-    if (!window.confirm('Are you sure you want to cancel this order?')) return;
-    
+  const confirmDelivery = async (orderId) => {
     try {
-      setCancelling(true);
-      const orderRef = doc(db, 'orders', orderId);
-      
-      // Update order status
+      const orderRef = doc(db, "orders", orderId);
       await updateDoc(orderRef, {
-        status: 'cancelled',
-        updatedAt: new Date(),
-        cancellationReason: 'Customer requested cancellation'
-      });
-      
-      // Add to cancellation log
-      await addDoc(collection(db, 'cancellations'), {
-        orderId,
-        userId: user.uid,
-        cancelledAt: new Date(),
-        reason: 'Customer requested cancellation'
-      });
-      
-      // Update shop's order
-      const shopOrderRef = doc(db, 'shops', orders.find(o => o.id === orderId).shopId, 'orders', orderId);
-      await updateDoc(shopOrderRef, {
-        status: 'cancelled',
-        updatedAt: new Date()
-      });
-      
-      // Update user's order
-      const userOrderRef = doc(db, 'users', user.uid, 'orders', orderId);
-      await updateDoc(userOrderRef, {
-        status: 'cancelled',
-        updatedAt: new Date()
-      });
-      
-      // Create notification for shop
-      await addDoc(collection(db, 'notifications'), {
-        type: 'order_cancelled',
-        orderId,
-        shopId: orders.find(o => o.id === orderId).shopId,
-        userId: user.uid,
-        message: `Order #${orderId.slice(0, 8)} has been cancelled`,
-        read: false,
-        createdAt: new Date()
+        status: "delivered",
+        deliveredAt: new Date()
       });
       
       // Update local state
-      setOrders(prev => prev.map(order => 
-        order.id === orderId ? { ...order, status: 'cancelled' } : order
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, status: "delivered", deliveredAt: new Date() } 
+          : order
       ));
       
-      toast.success('Order cancelled successfully');
-    } catch (error) {
-      toast.error('Error cancelling order: ' + error.message);
-    } finally {
-      setCancelling(false);
+      alert("Delivery confirmed successfully!");
+    } catch (err) {
+      console.error("Error confirming delivery: ", err);
+      alert("Failed to confirm delivery. Please try again.");
     }
   };
 
-  const handleContactShop = (shopId) => {
-    // In a real app, this would open a chat or email interface
-    navigate(`/contact-shop/${shopId}`);
+  const confirmPayment = async (orderId) => {
+    try {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, {
+        paymentStatus: "paid",
+        paidAt: new Date()
+      });
+      
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, paymentStatus: "paid", paidAt: new Date() } 
+          : order
+      ));
+      
+      alert("Payment confirmed successfully!");
+    } catch (err) {
+      console.error("Error confirming payment: ", err);
+      alert("Failed to confirm payment. Please try again.");
+    }
   };
 
-  const handleContactSupport = () => {
-    navigate('/contact-support');
+  const cancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) {
+      return;
+    }
+    
+    setCancelLoading(true);
+    try {
+      const orderRef = doc(db, "orders", orderId);
+      await updateDoc(orderRef, {
+        status: "cancelled",
+        cancelledAt: new Date()
+      });
+      
+      // Update local state
+      setOrders(orders.map(order => 
+        order.id === orderId 
+          ? { ...order, status: "cancelled", cancelledAt: new Date() } 
+          : order
+      ));
+      
+      // If we're viewing this order in detail view, close it
+      if (selectedOrder && selectedOrder.id === orderId) {
+        closeOrderDetails();
+      }
+      
+      alert("Order cancelled successfully!");
+    } catch (err) {
+      console.error("Error cancelling order: ", err);
+      alert("Failed to cancel order. Please try again.");
+    } finally {
+      setCancelLoading(false);
+    }
   };
 
-  const formatDate = (timestamp) => {
-    if (!timestamp?.seconds) return 'N/A';
-    return new Date(timestamp.seconds * 1000).toLocaleString();
+  const viewOrderDetails = (order) => {
+    setSelectedOrder(order);
   };
 
-  if (loading) {
-    return (
-      <div className="order-confirmation">
-        <div className="loading-spinner">Loading order details...</div>
-      </div>
-    );
-  }
+  const closeOrderDetails = () => {
+    setSelectedOrder(null);
+  };
 
-  if (!orders.length) {
-    return (
-      <div className="order-confirmation">
-        <div className="error-message">No order found. Please check your order history.</div>
-      </div>
-    );
-  }
+  const getStatusText = (status) => {
+    switch(status) {
+      case 'pending': return 'Order Placed';
+      case 'processing': return 'Preparing';
+      case 'shipped': return 'Out for Delivery';
+      case 'delivered': return 'Delivered';
+      case 'cancelled': return 'Cancelled';
+      default: return status.charAt(0).toUpperCase() + status.slice(1);
+    }
+  };
+
+  const canCancelOrder = (order) => {
+    return ['pending', 'processing'].includes(order.status);
+  };
+
+  if (loading) return (
+    <div className="loading-container">
+      <div className="loading-spinner"></div>
+      <p>Loading your orders...</p>
+    </div>
+  );
+  
+  if (error) return <div className="error-container">{error}</div>;
+  
+  if (orders.length === 0) return (
+    <div className="empty-state">
+      <img src="/empty-orders.svg" alt="No orders" className="empty-icon" />
+      <h2>You haven't placed any orders yet</h2>
+      <p>When you place an order, it will appear here</p>
+      <button className="btn-primary" onClick={() => window.location.href = '/products'}>
+        Start Shopping
+      </button>
+    </div>
+  );
 
   return (
-    <div className="order-confirmation">
-      <div className="confirmation-header">
-        <h1>Order Confirmation</h1>
-        <p className="success-message">Thank you for your order!</p>
-        <p>We've received your order will process it shortly.</p>
-      </div>
+    <div className="user-orders-container">
+      <h1>My Orders</h1>
       
-      <div className="order-summary">
-        <h2>Order Summary</h2>
-        <div className="summary-details">
-          <p><strong>Order Number(s):</strong> {orders.map(o => `#${o.id.slice(0, 8)}`).join(', ')}</p>
-          <p><strong>Total Amount:</strong> ${totalAmount?.toFixed(2)}</p>
-          <p><strong>Delivery Address:</strong> {deliveryAddress?.formatted}</p>
-          <p><strong>Estimated Delivery:</strong> {formatDate(orders[0]?.deliveryTime)}</p>
-        </div>
-      </div>
-      
-      {orders.map(order => (
-        <div key={order.id} className="order-details-card">
-          <div className="order-header">
-            <h3>Order #{order.id.slice(0, 8)} - {order.shopName}</h3>
-            <span className={`status-badge ${order.status}`}>{order.status}</span>
+      <div className="orders-list">
+        {orders.map((order) => (
+          <div key={order.id} className={`order-card ${order.status}`}>
+            <div className="order-header">
+              <div className="order-id-date">
+                <h3>Order #{order.id.slice(0, 8)}</h3>
+                <span className="order-date">
+                  {new Date(order.createdAt.seconds * 1000).toLocaleDateString()} at {' '}
+                  {new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </span>
+              </div>
+              <span className={`status-badge ${order.status}`}>
+                {getStatusText(order.status)}
+              </span>
+            </div>
+            
+            <div className="order-items-preview">
+              {order.items.slice(0, 3).map((item, index) => (
+                <div key={index} className="item-preview">
+                  <div className="item-image-container">
+                    <img 
+                      src={item.imageUrl || "/placeholder-product.png"} 
+                      alt={item.name} 
+                      className="item-image" 
+                      onError={(e) => {e.target.src = "/placeholder-product.png"}}
+                    />
+                    <span className="item-quantity">{item.quantity}x</span>
+                  </div>
+                  <p className="item-name">{item.name}</p>
+                </div>
+              ))}
+              {order.items.length > 3 && (
+                <div className="more-items">
+                  +{order.items.length - 3} more
+                </div>
+              )}
+            </div>
+            
+            <div className="order-summary">
+              <div className="order-total">
+                <p><strong>Total:</strong> ${order.totalAmount.toFixed(2)}</p>
+                <p className="payment-status">{order.paymentStatus === 'paid' ? 'Paid' : 'Payment Pending'}</p>
+              </div>
+              
+              <div className="order-actions">
+                <button 
+                  className="btn-details" 
+                  onClick={() => viewOrderDetails(order)}
+                >
+                  View Details
+                </button>
+                
+                {canCancelOrder(order) && (
+                  <button 
+                    className="btn-cancel"
+                    onClick={() => cancelOrder(order.id)}
+                    disabled={cancelLoading}
+                  >
+                    {cancelLoading ? 'Cancelling...' : 'Cancel Order'}
+                  </button>
+                )}
+                
+                {order.status === "shipped" && (
+                  <button 
+                    className="btn-confirm-delivery"
+                    onClick={() => confirmDelivery(order.id)}
+                  >
+                    Confirm Delivery
+                  </button>
+                )}
+                
+                {order.status === "delivered" && order.paymentStatus === "pending" && order.paymentMethod === "cash" && (
+                  <button 
+                    className="btn-confirm-payment"
+                    onClick={() => confirmPayment(order.id)}
+                  >
+                    Confirm Payment
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-          
-          <div className="order-items">
-            <h4>Items:</h4>
-            <ul>
-              {order.items.map((item, index) => (
-                <li key={index} className="order-item">
-                  <div className="item-image">
-                    {item.imageUrl && <img src={item.imageUrl} alt={item.name} />}
+        ))}
+      </div>
+
+      {selectedOrder && (
+        <div className="order-details-modal">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Order Details</h2>
+              <span className="close-button" onClick={closeOrderDetails}>&times;</span>
+            </div>
+            
+            <div className="order-status-timeline">
+              <div className={`status-step ${selectedOrder.status === 'cancelled' ? 'cancelled' : 'completed'}`}>
+                <div className="status-icon">✓</div>
+                <div className="status-label">Order Placed</div>
+                <div className="status-time">
+                  {new Date(selectedOrder.createdAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                </div>
+              </div>
+              
+              <div className={`status-step ${selectedOrder.status === 'cancelled' ? 'cancelled' : 
+                ['processing', 'shipped', 'delivered'].includes(selectedOrder.status) ? 'completed' : 'pending'}`}>
+                <div className="status-icon">✓</div>
+                <div className="status-label">Processing</div>
+              </div>
+              
+              <div className={`status-step ${selectedOrder.status === 'cancelled' ? 'cancelled' : 
+                ['shipped', 'delivered'].includes(selectedOrder.status) ? 'completed' : 'pending'}`}>
+                <div className="status-icon">✓</div>
+                <div className="status-label">Out for Delivery</div>
+              </div>
+              
+              <div className={`status-step ${selectedOrder.status === 'cancelled' ? 'cancelled' : 
+                selectedOrder.status === 'delivered' ? 'completed' : 'pending'}`}>
+                <div className="status-icon">✓</div>
+                <div className="status-label">Delivered</div>
+                {selectedOrder.deliveredAt && (
+                  <div className="status-time">
+                    {new Date(selectedOrder.deliveredAt.seconds * 1000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="order-info">
+              <div className="info-section">
+                <h3>Order Information</h3>
+                <p><strong>Order ID:</strong> {selectedOrder.id}</p>
+                <p><strong>Date:</strong> {new Date(selectedOrder.createdAt.seconds * 1000).toLocaleString()}</p>
+                <p><strong>Status:</strong> {getStatusText(selectedOrder.status)}</p>
+                <p><strong>Payment Method:</strong> {selectedOrder.paymentMethod}</p>
+                <p><strong>Payment Status:</strong> {selectedOrder.paymentStatus}</p>
+                {selectedOrder.deliveredAt && (
+                  <p><strong>Delivered At:</strong> {new Date(selectedOrder.deliveredAt.seconds * 1000).toLocaleString()}</p>
+                )}
+                {selectedOrder.paidAt && (
+                  <p><strong>Paid At:</strong> {new Date(selectedOrder.paidAt.seconds * 1000).toLocaleString()}</p>
+                )}
+                {selectedOrder.cancelledAt && (
+                  <p><strong>Cancelled At:</strong> {new Date(selectedOrder.cancelledAt.seconds * 1000).toLocaleString()}</p>
+                )}
+              </div>
+              
+              <div className="info-section">
+                <h3>Shipping Address</h3>
+                <p>{selectedOrder.shippingAddress.name}</p>
+                <p>{selectedOrder.shippingAddress.street}</p>
+                <p>{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zip}</p>
+                <p>{selectedOrder.shippingAddress.country}</p>
+                <p>Phone: {selectedOrder.shippingAddress.phone}</p>
+              </div>
+            </div>
+            
+            <h3>Order Items</h3>
+            <div className="order-items-detail">
+              {selectedOrder.items.map((item, index) => (
+                <div key={index} className="order-item">
+                  <div className="item-image-container">
+                    <img 
+                      src={item.imageUrl || "/placeholder-product.png"} 
+                      alt={item.name} 
+                      onError={(e) => {e.target.src = "/placeholder-product.png"}}
+                    />
                   </div>
                   <div className="item-details">
-                    <p>{item.name}</p>
-                    <p>${item.price.toFixed(2)} × {item.quantity}</p>
-                    <p>Subtotal: ${(item.price * item.quantity).toFixed(2)}</p>
+                    <h4>{item.name}</h4>
+                    <p className="item-price">${item.price.toFixed(2)} x {item.quantity}</p>
+                    <p className="item-subtotal">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
-          </div>
-          
-          <div className="order-totals">
-            <p><strong>Subtotal:</strong> ${order.totalAmount.toFixed(2)}</p>
-            <p><strong>Delivery Fee:</strong> ${order.deliveryFee.toFixed(2)}</p>
-            <p><strong>Total:</strong> ${(order.totalAmount + order.deliveryFee).toFixed(2)}</p>
-          </div>
-          
-          <div className="order-actions">
-            {order.status === 'pending' && (
-              <button 
-                onClick={() => handleCancelOrder(order.id)}
-                disabled={cancelling}
-                className="cancel-btn"
-              >
-                {cancelling ? 'Cancelling...' : 'Cancel Order'}
-              </button>
-            )}
+            </div>
             
-            <button 
-              onClick={() => handleContactShop(order.shopId)}
-              className="contact-btn"
-            >
-              Contact {order.shopName}
-            </button>
+            <div className="order-summary-detail">
+              <div className="summary-row">
+                <span>Subtotal</span>
+                <span>${selectedOrder.subtotal.toFixed(2)}</span>
+              </div>
+              {selectedOrder.tax && (
+                <div className="summary-row">
+                  <span>Tax</span>
+                  <span>${selectedOrder.tax.toFixed(2)}</span>
+                </div>
+              )}
+              {selectedOrder.shippingCost && (
+                <div className="summary-row">
+                  <span>Shipping</span>
+                  <span>${selectedOrder.shippingCost.toFixed(2)}</span>
+                </div>
+              )}
+              {selectedOrder.discount && (
+                <div className="summary-row discount">
+                  <span>Discount</span>
+                  <span>-${selectedOrder.discount.toFixed(2)}</span>
+                </div>
+              )}
+              <div className="summary-row total">
+                <span>Total</span>
+                <span>${selectedOrder.totalAmount.toFixed(2)}</span>
+              </div>
+            </div>
+            
+            <div className="modal-actions">
+              {canCancelOrder(selectedOrder) && (
+                <button 
+                  className="btn-cancel"
+                  onClick={() => cancelOrder(selectedOrder.id)}
+                  disabled={cancelLoading}
+                >
+                  {cancelLoading ? 'Cancelling...' : 'Cancel Order'}
+                </button>
+              )}
+              
+              {selectedOrder.status === "shipped" && (
+                <button 
+                  className="btn-confirm-delivery"
+                  onClick={() => {
+                    confirmDelivery(selectedOrder.id);
+                    closeOrderDetails();
+                  }}
+                >
+                  Confirm Delivery
+                </button>
+              )}
+              
+              {selectedOrder.status === "delivered" && selectedOrder.paymentStatus === "pending" && selectedOrder.paymentMethod === "cash" && (
+                <button 
+                  className="btn-confirm-payment"
+                  onClick={() => {
+                    confirmPayment(selectedOrder.id);
+                    closeOrderDetails();
+                  }}
+                >
+                  Paid Cash To Delivery Person
+                </button>
+              )}
+              
+              <button className="btn-close" onClick={closeOrderDetails}>Close</button>
+            </div>
           </div>
         </div>
-      ))}
-      
-      <div className="support-section">
-        <h3>Need Help?</h3>
-        <p>If you have any questions about your order, our customer care team is here to help.</p>
-        <button onClick={handleContactSupport} className="support-btn">
-          Contact Customer Support
-        </button>
-      </div>
-      
-      <div className="continue-shopping">
-        <button onClick={() => navigate('/')} className="shop-btn">
-          Continue Shopping
-        </button>
-      </div>
+      )}
     </div>
   );
 };
 
-export default OrderConfirmation;
+export default UserOrders;
