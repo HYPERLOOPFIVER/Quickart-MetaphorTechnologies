@@ -12,6 +12,7 @@ import CategoryProducts from './Category';
 
 import UserOrders from './OrderConfirmation';
 import CustomerOrders from './OrderConfirmation';
+import ProductDetails from './Productsdetail';
 
 // Create a protected route component to verify authentication
 const ProtectedRoute = ({ children }) => {
@@ -69,7 +70,7 @@ function App() {
           />
           <Route path="/login" element={<Login />} />
           
-          <Route path="/products:category" element={<CategoryProducts/>} />
+          <Route path="/product/:productId" element={<ProductDetails/>} />
           <Route path="/signup" element={<SignUp />} />
         
           <Route path="/Yourorders" element={<UserOrders/>} />
