@@ -309,11 +309,7 @@ const ProductDetails = () => {
           </div>
           
           <div className="product-details-list">
-            <div className="product-detail-item">
-                {product.inStock ? 'In Stock' : 'Out of Stock'}
-              
-            </div>
-            
+          
             {product.soldCount !== undefined && (
               <div className="product-detail-item">
                 <span className="detail-label">Sold:</span>
