@@ -1089,6 +1089,61 @@ return (
         <p> Find Best Prices : No Fixed Prices</p>
       </div>
     </div>
+     {/* Recently Viewed Products */}
+     {recentlyViewed.length > 0 && (
+      <div className="products-section recently-viewed-section">
+        <div className="section-header">
+          <h2 className="section-title">Recently Viewed</h2>
+          <button className="see-all-btn" onClick={() => navigate('/history')}>See All</button>
+        </div>
+        <div className="products-scroll">
+          {recentlyViewed.map((product) => (
+            <div 
+              key={product.id} 
+              className="product-card" 
+              onClick={() => redirectToProduct(product.id)}
+            >
+              <div className="product-image-container">
+                <img src={product.imageUrl || 'https://via.placeholder.com/150'} alt={product.name} className="product-image-img"/>
+                {product.discount && <span className="discount-tag">{product.discount}% OFF</span>}
+                <button 
+                  className="wishlist-icon" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleAddToWishlist(product.id);
+                  }}
+                >
+                  <Heart 
+                    size={20} 
+                    fill={wishlistItems.some(item => item.productId === product.id) ? '#ff4d4f' : 'none'} 
+                    stroke={wishlistItems.some(item => item.productId === product.id) ? '#ff4d4f' : 'currentColor'}
+                  />
+                </button>
+              </div>
+              <div className="product-details">
+                <div className="product-name">{product.name}</div>
+                <div className="product-weight">{product.weight || ''}</div>
+                <div className="product-price-container">
+                  <div className="product-price">₹{product.price?.toFixed(2)}</div>
+                  {product.originalPrice && (
+                    <div className="product-original-price">₹{product.originalPrice.toFixed(2)}</div>
+                  )}
+                </div>
+                <button 
+                  className="add-to-cart" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(product);
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )} 
     {/* All Products Section */}
     {filteredProducts.length > 0 && (
       <div className="products-section all-products-section">
@@ -1154,61 +1209,7 @@ return (
       </div>
     )}
     
-    {/* Recently Viewed Products */}
-    {recentlyViewed.length > 0 && (
-      <div className="products-section recently-viewed-section">
-        <div className="section-header">
-          <h2 className="section-title">Recently Viewed</h2>
-          <button className="see-all-btn" onClick={() => navigate('/history')}>See All</button>
-        </div>
-        <div className="products-scroll">
-          {recentlyViewed.map((product) => (
-            <div 
-              key={product.id} 
-              className="product-card" 
-              onClick={() => redirectToProduct(product.id)}
-            >
-              <div className="product-image-container">
-                <img src={product.imageUrl || 'https://via.placeholder.com/150'} alt={product.name} className="product-image-img"/>
-                {product.discount && <span className="discount-tag">{product.discount}% OFF</span>}
-                <button 
-                  className="wishlist-icon" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleAddToWishlist(product.id);
-                  }}
-                >
-                  <Heart 
-                    size={20} 
-                    fill={wishlistItems.some(item => item.productId === product.id) ? '#ff4d4f' : 'none'} 
-                    stroke={wishlistItems.some(item => item.productId === product.id) ? '#ff4d4f' : 'currentColor'}
-                  />
-                </button>
-              </div>
-              <div className="product-details">
-                <div className="product-name">{product.name}</div>
-                <div className="product-weight">{product.weight || ''}</div>
-                <div className="product-price-container">
-                  <div className="product-price">₹{product.price?.toFixed(2)}</div>
-                  {product.originalPrice && (
-                    <div className="product-original-price">₹{product.originalPrice.toFixed(2)}</div>
-                  )}
-                </div>
-                <button 
-                  className="add-to-cart" 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAddToCart(product);
-                  }}
-                >
-                  Add
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    )} 
+   
     {/* Trending Products Section */}
     <div className="products-section trending-section">
       <div className="section-header">

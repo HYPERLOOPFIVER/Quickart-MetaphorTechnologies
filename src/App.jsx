@@ -69,10 +69,9 @@ function App() {
             } 
           />
           <Route path="/login" element={<Login />} />
-          
+          <Route path="/categories" element={<CategoryProducts/>} />
           <Route path="/product/:productId" element={<ProductDetails/>} />
           <Route path="/signup" element={<SignUp />} />
-        
           <Route path="/Yourorders" element={<UserOrders/>} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" />} />

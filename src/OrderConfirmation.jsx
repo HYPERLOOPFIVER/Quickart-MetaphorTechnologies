@@ -1050,7 +1050,7 @@ const UserOrders = () => {
 
   return (
     <div className="user-orders-container">
-      <h1>My Orders</h1>
+      <h1 className='usero'>My Orders</h1>
       
       <div className="orders-list">
         {orders.map((order) => (
@@ -1097,12 +1097,7 @@ const UserOrders = () => {
               </div>
               
               <div className="order-actions">
-                <button 
-                  className="btn-details" 
-                  onClick={() => viewOrderDetails(order)}
-                >
-                  View Details
-                </button>
+              
                 
                 {canCancelOrder(order) && (
                   <button 

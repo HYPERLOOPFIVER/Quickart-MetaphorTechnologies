@@ -1,13 +1,13 @@
 /* UserOrder.css */
 :root {
-    --primary-color: #0c831f;
-    --primary-light: #e6f3e8;
+    --primary-color: #000000;
+    --primary-light: #1b0101;
     --secondary-color: #ff5722;
-    --text-color: #333;
-    --text-light: #666;
-    --border-color: #e0e0e0;
-    --background-light: #f9f9f9;
-    --shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    --text-color: #ffffff;
+    --text-light: #ffffff;
+    --border-color: #fcd6d600;
+    --background-light: #635959;
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0);
     --status-pending: #f0ad4e;
     --status-processing: #5bc0de;
     --status-shipped: #337ab7;
@@ -37,9 +37,9 @@
   }
   
   .order-card {
-    background-color: white;
+    background:  linear-gradient(145deg, #000000, #5c5ca3);
     border-radius: 10px;
-    box-shadow: var(--shadow);
+    box-shadow: var(rgba(255, 255, 255, 0), 0 4px 20px rgba(0, 0, 0, 0.1));
     padding: 16px;
     transition: transform 0.2s ease;
   }
@@ -1083,4 +1083,8 @@
     .close-button, .modal-actions {
       display: none !important;
     }
+  }
+  .usero{
+    display: flex;
+    ;
   }
