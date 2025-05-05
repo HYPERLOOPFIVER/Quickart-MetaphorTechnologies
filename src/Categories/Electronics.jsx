@@ -27,7 +27,6 @@ const ElectronicsPage = () => {
         // Fetch user document to get city from address array
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
-        
         if (!userDoc.exists()) {
           setError('User profile not found');
           setLoading(false);
@@ -37,21 +36,26 @@ const ElectronicsPage = () => {
         const userData = userDoc.data();
         const userAddress = userData.address || [];
         
-        // Find the city in the address array
+        // Improved logic to find the city in the address array
         let city = '';
         if (Array.isArray(userAddress) && userAddress.length > 0) {
-          const cityEntry = userAddress.find(addr => addr.city) || userAddress[0];
-          city = cityEntry.city || cityEntry;
+          // Try to find an address entry with a city property
+          const cityAddress = userAddress.find(addr => addr && typeof addr === 'object' && addr.city);
+          
+          if (cityAddress) {
+            city = cityAddress.city;
+          } else if (userAddress[0]) {
+            // If no specific city property found, check if first address can be used
+            city = typeof userAddress[0] === 'object' ? userAddress[0].city || '' : userAddress[0];
+          }
         }
         
         setUserCity(city);
-        
         if (!city) {
           setError('No city found in your profile. Please update your address.');
           setLoading(false);
           return;
         }
-        
         // Query products based on category (electronics) and city
         const productsRef = collection(db, 'products');
         const q = query(

@@ -13,6 +13,7 @@ import CategoryProducts from './Category';
 import UserOrders from './OrderConfirmation';
 import CustomerOrders from './OrderConfirmation';
 import ProductDetails from './Productsdetail';
+import ElectronicsPage from './Categories/Electronics';
 
 // Create a protected route component to verify authentication
 const ProtectedRoute = ({ children }) => {
@@ -73,6 +74,8 @@ function App() {
           <Route path="/product/:productId" element={<ProductDetails/>} />
           <Route path="/signup" element={<SignUp />} />
           <Route path="/Yourorders" element={<UserOrders/>} />
+          <Route path="/electronics" element={<ElectronicsPage/>} />
+
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

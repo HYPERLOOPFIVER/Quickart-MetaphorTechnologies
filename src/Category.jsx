@@ -6,23 +6,20 @@ const CategoriesPage = () => {
   const categories = [
     {
       id: 1,
-      name: '',
+      name: 'Groceries',
       description: '',
-      icon: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSM4IsjFNdrSf7oZKc9PgQpEge0D4AkevGjvg&s',
       route: '/groceries'
     },
     {
       id: 2,
       name: 'Vegetables',
-      description: 'Fresh organic vegetables sourced from local farms',
-      icon: '🥦',
+      description: '',
       route: '/vegetable'
     },
     {
       id: 3,
       name: 'Electronics',
-      description: 'Latest gadgets, devices, and accessories',
-      icon: '📱',
+      description: '',
       route: '/electronics'
     }
   ];
@@ -47,8 +44,7 @@ const CategoriesPage = () => {
             className="category-card"
             onClick={() => navigateToCategory(category.route)}
           >
-            <img  src={category.icon} alt="" className='category-icon'/>
-      
+
             <div className="category-content">
               <h2>{category.name}</h2>
               <p>{category.description}</p>
