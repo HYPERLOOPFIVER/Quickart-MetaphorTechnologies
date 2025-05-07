@@ -1,5 +1,6 @@
 import React from 'react';
 import './Glory.css'
+import Navbar from './Navbar';
 // Categories Page Component - using the premium dark theme
 const CategoriesPage = () => {
   // Categories data
@@ -53,6 +54,8 @@ const CategoriesPage = () => {
           </div>
         ))}
       </div>
+           <Navbar/>
+      
     </div>
   );
 };

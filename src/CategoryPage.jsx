@@ -2,7 +2,7 @@ import React from 'react';
 import { useUserLocation } from '../hooks/useUserLocation';
 import { useProducts } from '../hooks/useProducts';
 import ProductCard from './ProductCard';
-
+import Navbar from './Navbar';
 const CategoryPage = ({ category, title }) => {
   const { userLocation, loading: locationLoading, error: locationError } = useUserLocation();
   const { 
@@ -58,6 +58,7 @@ const CategoryPage = ({ category, title }) => {
           ))}
         </div>
       )}
+      <Navbar />
     </div>
   );
 };

@@ -4,6 +4,8 @@ import { db } from './Firebase';
 import { getAuth } from 'firebase/auth';
 import './UserOrder.css';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import Navbar from './Navbar';
 import { useNavigate } from 'react-router-dom';
 import { HomeIcon, ShoppingCart, Clock, User } from 'lucide-react'; // Adjust the import based on your icon library
 const UserOrders = () => {
@@ -1262,7 +1264,7 @@ const UserOrders = () => {
                 </button>
               )}
               
-              {selectedOrder.status === "shipped" && (
+              {selectedOrder.status === "delivered" && (
                 <button 
                   className="btn-confirm-delivery"
                   onClick={() => {
@@ -1291,7 +1293,7 @@ const UserOrders = () => {
           </div>
         </div>
       )}
-     
+     <Navbar/>
     </div>
   );
 };

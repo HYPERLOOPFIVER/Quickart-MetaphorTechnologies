@@ -4,6 +4,7 @@ import { db, auth } from './Firebase';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, ShoppingBag, Heart, Clock, CheckCircle, Truck, MapPin, LogOut, Edit } from 'lucide-react';
 import './Profile.css';
+import Navbar from './Navbar';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -357,6 +358,7 @@ export default function Profile() {
           <LogOut size={18} /> Sign Out
         </button>
       </div>
+      <Navbar/>
     </div>
   );
 }

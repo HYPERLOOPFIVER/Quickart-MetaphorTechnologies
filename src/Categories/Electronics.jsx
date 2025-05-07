@@ -1,200 +1,102 @@
 import React, { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { db, auth } from '../Firebase';
-import { Link } from 'react-router-dom';
-import './Category.css';
+import { collection, query, where, getDocs, doc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { db } from '../Firebase'; // Adjust the import path based on your project structure
+import './Electronics.css'; // Import the CSS file
 
-const ElectronicsPage = () => {
+const Electronics = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [userCity, setUserCity] = useState('');
-  const [error, setError] = useState('');
-  const [filter, setFilter] = useState('all'); // Filter state for electronics subcategories
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUserCityAndProducts = async () => {
+    const fetchElectronicsProducts = async () => {
       try {
-        setLoading(true);
+        // Create a query against the products collection for items with category "electronics"
+        const productsRef = collection(db, "products");
+        const q = query(productsRef, where("category", "==", "electronics"));
         
-        // Get current user
-        const user = auth.currentUser;
-        if (!user) {
-          setError('Please log in to view nearby electronics');
-          setLoading(false);
-          return;
-        }
-        
-        // Fetch user document to get city from address array
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-          setError('User profile not found');
-          setLoading(false);
-          return;
-        }
-        
-        const userData = userDoc.data();
-        const userAddress = userData.address || [];
-        
-        // Improved logic to find the city in the address array
-        let city = '';
-        if (Array.isArray(userAddress) && userAddress.length > 0) {
-          // Try to find an address entry with a city property
-          const cityAddress = userAddress.find(addr => addr && typeof addr === 'object' && addr.city);
-          
-          if (cityAddress) {
-            city = cityAddress.city;
-          } else if (userAddress[0]) {
-            // If no specific city property found, check if first address can be used
-            city = typeof userAddress[0] === 'object' ? userAddress[0].city || '' : userAddress[0];
-          }
-        }
-        
-        setUserCity(city);
-        if (!city) {
-          setError('No city found in your profile. Please update your address.');
-          setLoading(false);
-          return;
-        }
-        // Query products based on category (electronics) and city
-        const productsRef = collection(db, 'products');
-        const q = query(
-          productsRef, 
-          where('category', '==', 'electronics'),
-          where('city', '==', city)
-        );
-        
+        // Execute the query
         const querySnapshot = await getDocs(q);
-        const productsData = [];
         
+        // Process the results
+        const productsList = [];
         querySnapshot.forEach((doc) => {
-          productsData.push({
+          productsList.push({
             id: doc.id,
             ...doc.data()
           });
         });
         
-        setProducts(productsData);
+        setProducts(productsList);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching electronic products:', err);
-        setError('Failed to load electronic products. Please try again later.');
+        console.error("Error fetching electronics products:", err);
+        setError("Failed to fetch products. Please try again later.");
         setLoading(false);
       }
     };
-    
-    fetchUserCityAndProducts();
+
+    fetchElectronicsProducts();
   }, []);
-  
-  const filterProducts = () => {
-    if (filter === 'all') {
-      return products;
-    }
-    return products.filter(product => product.subcategory === filter);
+
+  const handleAddToCart = (productId) => {
+    // Navigate to the product page with the product ID
+    navigate(`/product/${productId}`);
   };
 
-  const filteredProducts = filterProducts();
-  
   if (loading) {
-    return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading electronic products...</p>
-      </div>
-    );
+    return <div className="loading-message">Loading electronics products...</div>;
   }
-  
+
   if (error) {
-    return (
-      <div className="error-container">
-        <h2>Error</h2>
-        <p>{error}</p>
-        <button onClick={() => window.location.reload()} className="retry-button">
-          Try Again
-        </button>
-      </div>
-    );
+    return <div className="error-message">{error}</div>;
+  }
+
+  if (products.length === 0) {
+    return <div className="no-products-message">No electronics products found.</div>;
   }
 
   return (
-    <div className="category-page electronics-page">
-      <div className="category-header">
-        <h1>Electronics near you</h1>
-        {userCity && <p className="location-info">Electronics available in {userCity}</p>}
-      </div>
+    <div className="electronics-container">
+      <h1 className="electronics-title">Electronics Products</h1>
       
-      <div className="filter-options">
-        <button 
-          className={`filter-button ${filter === 'all' ? 'active' : ''}`}
-          onClick={() => setFilter('all')}
-        >
-          All
-        </button>
-        <button 
-          className={`filter-button ${filter === 'smartphone' ? 'active' : ''}`}
-          onClick={() => setFilter('smartphone')}
-        >
-          Smartphones
-        </button>
-        <button 
-          className={`filter-button ${filter === 'laptop' ? 'active' : ''}`}
-          onClick={() => setFilter('laptop')}
-        >
-          Laptops
-        </button>
-        <button 
-          className={`filter-button ${filter === 'accessory' ? 'active' : ''}`}
-          onClick={() => setFilter('accessory')}
-        >
-          Accessories
-        </button>
-      </div>
-      
-      {filteredProducts.length === 0 ? (
-        <div className="no-products">
-          <p>No electronic products available in your area right now.</p>
-          <Link to="/" className="back-button">Back to Home</Link>
-        </div>
-      ) : (
-        <div className="products-grid">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="product-card electronics-card">
-              <div className="product-image-container">
-                <img 
-                  src={product.imageUrl || '/electronics-placeholder.png'} 
-                  alt={product.name}
-                  className="product-image" 
-                />
-                {product.condition && (
-                  <span className={`condition-badge ${product.condition.toLowerCase()}`}>
-                    {product.condition}
-                  </span>
-                )}
-              </div>
-              <div className="product-info">
-                <h3 className="product-name">{product.name}</h3>
-                <p className="product-price">₹{product.price.toFixed(2)}</p>
-                <p className="product-seller">{product.sellerName}</p>
-                {product.brand && <p className="product-brand">Brand: {product.brand}</p>}
-                {product.warranty && <p className="product-warranty">Warranty: {product.warranty}</p>}
-                <p className="product-distance">{product.distance ? `${product.distance} km away` : 'Nearby'}</p>
-                <div className="product-actions">
-                  <button className="add-to-cart-button">Add to Cart</button>
-                  <Link to={`/product/${product.id}`} className="view-details-button">
-                    View Details
-                  </Link>
-                </div>
-              </div>
+      <div className="products-grid">
+        {products.map((product) => (
+          <div key={product.id} className="product-card">
+            {product.imageUrl && (
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="product-image"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/placeholder-image.png"; // Replace with your fallback image
+                }}
+              />
+            )}
+            <h2 className="product-name">{product.name}</h2>
+            <p className="product-description">{product.description}</p>
+            <div className="product-details">
+              <span className="product-price">${product.price?.toFixed(2) || 'N/A'}</span>
+              {product.inStock ? (
+                <span className="in-stock">In Stock</span>
+              ) : (
+                <span className="out-of-stock">Out of Stock</span>
+              )}
             </div>
-          ))}
-        </div>
-      )}
-      
-      <div className="category-navigation">
-        <Link to="/" className="back-to-home">Back to Categories</Link>
+            <button 
+              className="add-to-cart-button"
+              onClick={() => handleAddToCart(product.id)}
+            >
+              Add to Cart
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
-export default ElectronicsPage;
+export default Electronics;
