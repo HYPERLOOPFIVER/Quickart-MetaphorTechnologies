@@ -4,7 +4,7 @@ import { doc, getDoc, setDoc, updateDoc, collection, query, where, documentId, g
 import { db, auth } from './Firebase';
 import { toast } from 'react-toastify';
 import './Details.css';
-
+import Navbar from './Navbar';
 const ProductDetails = () => {
   const { productId } = useParams();
   const [product, setProduct] = useState(null);
@@ -344,6 +344,7 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
+      <Navbar/>
     </div>
   );
 };
