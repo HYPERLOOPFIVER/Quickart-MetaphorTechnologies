@@ -530,17 +530,16 @@ body {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Slightly wider minimum */
+  gap: 20px; /* Increased gap for better spacing */
 }
 
 .products-scroll {
   display: flex;
   overflow-x: auto;
-  gap: 16px;
+  gap: 20px; /* Increased gap */
   scrollbar-width: thin;
-  padding-bottom: 10px;
-  padding-top: 4px;
+  padding: 10px 0; /* Even padding on top and bottom */
   scroll-behavior: smooth;
 }
 
@@ -567,10 +566,13 @@ body {
   box-shadow: var(--dark-card-shadow);
   border: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
-  min-width: 160px;
+  min-width: 180px; /* Increased for better proportions */
+  max-width: 100%; /* Ensures card doesn't overflow its container */
   cursor: pointer;
   transform: perspective(800px) rotateY(0deg);
   will-change: transform, box-shadow;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
@@ -613,6 +615,10 @@ body {
   border-radius: 6px;
   z-index: 1;
   box-shadow: 0 2px 8px rgba(255, 92, 138, 0.4);
+  max-width: calc(100% - 54px); /* Prevent overlap with wishlist icon */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wishlist-icon {
@@ -641,20 +647,29 @@ body {
 }
 
 .product-details {
-  padding: 14px;
+  padding: 16px; /* Increased padding */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1; /* Allow details to grow */
+  justify-content: space-between; /* Space between content and button */
+}
+
+.product-info {
+  margin-bottom: 16px; /* Space between info and button */
 }
 
 .product-name {
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 1rem;
   color: var(--dark-on-surface);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 44px;
+  min-height: 2.7em; /* Consistent height for 2 lines */
   line-height: 1.35;
+  word-break: break-word; /* Handles long words */
 }
 
 .product-weight {
@@ -662,18 +677,24 @@ body {
   color: var(--dark-on-background);
   opacity: 0.8;
   margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .product-price-container {
   display: flex;
   align-items: baseline;
+  flex-wrap: wrap; /* Allow prices to wrap if needed */
   margin-bottom: 12px;
+  gap: 8px; /* Space between wrapped elements */
 }
 
 .product-price {
   font-weight: 700;
   font-size: 1.1rem;
   color: var(--dark-on-surface);
+  white-space: nowrap; /* Keep price on one line */
 }
 
 .product-original-price {
@@ -681,7 +702,7 @@ body {
   color: var(--dark-on-background);
   opacity: 0.7;
   text-decoration: line-through;
-  margin-left: 8px;
+  white-space: nowrap; /* Keep price on one line */
 }
 
 .add-to-cart {
@@ -690,13 +711,17 @@ body {
   color: var(--dark-on-primary);
   border: none;
   border-radius: 8px;
-  padding: 10px 0;
+  padding: 12px 0; /* Slightly taller button */
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
   transition: var(--dark-transition-default);
   letter-spacing: 0.02rem;
   box-shadow: 0 4px 10px rgba(167, 106, 255, 0.2);
+  margin-top: auto; /* Push button to bottom */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .add-to-cart:hover {
@@ -705,6 +730,25 @@ body {
   box-shadow: 0 6px 15px rgba(167, 106, 255, 0.3);
 }
 
+/* Media queries for better responsiveness */
+@media (max-width: 600px) {
+  .products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
+  }
+  
+  .product-card {
+    min-width: 150px;
+  }
+  
+  .product-details {
+    padding: 12px;
+  }
+  
+  .product-name {
+    font-size: 0.95rem;
+  }
+}
 /* ===== Feature Banners ===== */
 .feature-banners {
   display: grid;
