@@ -1453,17 +1453,19 @@ return (
                 </div>
                 <div className="summary-row">
                   <span>Delivery Fee</span>
-                  <span>{getTotalCartPrice() > 100 ? 'FREE' : '₹80.00'}</span>
+                  <span>{getTotalCartPrice() > 500 ? 'FREE' : '₹60.00'}</span>
                 </div>
+                <div>                  <span>Delivery Fee is Free On Order More Than 600</span></div>
+
                 <div className="summary-row total">
                   <span>Total</span>
-                  <span>₹{(getTotalCartPrice() + (getTotalCartPrice() > 100 ? 0 : 20)).toFixed(2)}</span>
+                  <span>₹{(getTotalCartPrice() + (getTotalCartPrice() > 100 ? 0 : 60)).toFixed(2)}</span>
                 </div>
                 <button 
                   className="checkout-button"
                   onClick={handleCheckout}
                 >
-                  Proceed to Checkout
+                  Place Order
                 </button>
               </div>
             </>
