@@ -1,0 +1,711 @@
+/* LakeSmart Mobile App - Premium Login Screen CSS */
+
+:root {
+  /* Core Colors - Matching premium home screen */
+  --app-bg: #0a0a0c;
+  --app-surface: #141418;
+  --app-card: #1c1c22;
+  --app-surface-3: #26262e;
+  --app-primary: #a76aff;
+  --app-primary-dark: #7a29ff;
+  --app-primary-light: #c49aff;
+  --app-accent: #00e2c3;
+  --app-text: #ffffff;
+  --app-text-secondary: #e9e9ec;
+  --app-text-dark: #000000;
+  --app-error: #ff4d65;
+  --app-success: #00d666;
+  --app-warning: #ffcf00;
+  --app-shadow: rgba(0, 0, 0, 0.6);
+  --app-border: #32323c;
+  --app-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --app-radius: 16px;
+  
+  /* Premium Gradients */
+  --app-gradient-primary: linear-gradient(135deg, #a76aff 0%, #7a29ff 100%);
+  --app-gradient-card: linear-gradient(145deg, #161620, #1a1a22);
+  --app-blue-glow: 0 0 15px rgba(167, 106, 255, 0.4);
+  --app-safe-area-top: env(safe-area-inset-top, 0);
+  --app-safe-area-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* Reset & Base Styles */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+
+body {
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  padding: 0;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS-like status bar gradient */
+
+/* App Container */
+.auth-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100%;
+  width: 100%;
+  background: linear-gradient(180deg, var(--app-bg) 0%, var(--app-surface) 100%);
+  position: relative;
+  overflow: hidden;
+  padding: calc(40px + var(--app-safe-area-top)) 0 calc(24px + var(--app-safe-area-bottom)) 0;
+}
+
+/* Premium particle effects */
+.particles-container {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  background: radial-gradient(circle at center, rgba(167, 106, 255, 0.15), rgba(167, 106, 255, 0));
+  border-radius: 50%;
+  opacity: 0;
+  transform: translateY(100%);
+}
+
+.particle.animate {
+  animation: particleFloat 12s infinite ease-in;
+}
+
+.particle-1 {
+  width: 120px;
+  height: 120px;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.particle-2 {
+  width: 80px;
+  height: 80px;
+  left: 35%;
+  animation-delay: 2s;
+}
+
+.particle-3 {
+  width: 60px;
+  height: 60px;
+  left: 60%;
+  animation-delay: 4s;
+}
+
+.particle-4 {
+  width: 100px;
+  height: 100px;
+  left: 85%;
+  animation-delay: 1s;
+}
+
+.particle-5 {
+  width: 50px;
+  height: 50px;
+  left: 22%;
+  animation-delay: 3s;
+}
+
+.particle-6 {
+  width: 70px;
+  height: 70px;
+  left: 72%;
+  animation-delay: 5s;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+}
+
+/* Login success ripple animation */
+.login-success-ripple {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  width: 10px;
+  height: 10px;
+  background: var(--app-primary);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 100;
+  transition: transform 0.8s cubic-bezier(0.8, 0, 0.2, 1), opacity 0.8s ease;
+}
+
+.login-success-ripple.active {
+  transform: translate(-50%, -50%) scale(100);
+  opacity: 1;
+}
+
+/* App Form Container - Takes full screen on mobile */
+.auth-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0 1.5rem;
+  z-index: 2;
+  animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* App Logo */
+.logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2rem 0 3rem;
+}
+
+.logo {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.logo-wave {
+  position: absolute;
+  width: 100%;
+  height: 12px;
+  background: var(--app-gradient-primary);
+  border-radius: 20px;
+  opacity: 0.8;
+}
+
+.logo-wave:nth-child(1) {
+  top: 22px;
+  animation: wave 2.5s infinite ease-in-out;
+}
+
+.logo-wave:nth-child(2) {
+  top: 35px;
+  animation: wave 2.5s infinite ease-in-out 0.3s;
+}
+
+.logo-wave:nth-child(3) {
+  top: 48px;
+  animation: wave 2.5s infinite ease-in-out 0.6s;
+}
+
+@keyframes wave {
+  0%, 100% { transform: scaleX(0.8); opacity: 0.8; }
+  50% { transform: scaleX(1); opacity: 1; }
+}
+
+.app-name {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--app-text);
+  margin: 0;
+  background: var(--app-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+
+/* Headings */
+.auth-form h2 {
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.slogan {
+  color: var(--app-text-secondary);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: normal;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+/* Error Message */
+.error-message {
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 77, 101, 0.1);
+  border-left: 3px solid var(--app-error);
+  color: var(--app-error);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.error-message svg {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.auth-form.shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes shake {
+  10%, 90% { transform: translate3d(-1px, 0, 0); }
+  20%, 80% { transform: translate3d(2px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+  40%, 60% { transform: translate3d(3px, 0, 0); }
+}
+
+/* Form */
+.auth-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Input Fields */
+.input-group {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: var(--app-text-secondary);
+  transition: var(--app-transition);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.input-group input {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  padding: 1rem 1rem 1rem 2.75rem;
+  font-size: 1rem;
+  color: var(--app-text);
+  transition: var(--app-transition);
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input-group input::placeholder {
+  color: transparent;
+}
+
+.input-group label {
+  position: absolute;
+  left: 2.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--app-text-secondary);
+  pointer-events: none;
+  transition: var(--app-transition);
+  font-size: 1rem;
+}
+
+.input-group input:focus ~ label,
+.input-group input.has-value ~ label {
+  top: 0.5rem;
+  left: 1rem;
+  font-size: 0.75rem;
+  color: var(--app-primary);
+}
+
+.input-group input:focus {
+  border-color: var(--app-primary);
+  box-shadow: 0 0 0 1px rgba(167, 106, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.input-group input:focus ~ .input-icon {
+  color: var(--app-primary);
+}
+
+/* Password Toggle */
+.password-toggle {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--app-text-secondary);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--app-transition);
+}
+
+.password-toggle:hover {
+  color: var(--app-primary);
+}
+
+.password-toggle svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Form Options */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  color: var(--app-text-secondary);
+}
+
+.remember-me input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--app-border);
+  border-radius: 6px;
+  transition: var(--app-transition);
+}
+
+.remember-me:hover input ~ .checkmark {
+  background-color: rgba(255, 255, 255, 0.12);
+}
+
+.remember-me input:checked ~ .checkmark {
+  background-color: var(--app-primary);
+  border-color: var(--app-primary);
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.remember-me input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.remember-me .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.forgot-password {
+  color: var(--app-primary);
+  text-decoration: none;
+  transition: var(--app-transition);
+}
+
+.forgot-password:hover {
+  text-decoration: underline;
+  color: var(--app-primary-light);
+}
+
+/* Login Button */
+.login-button {
+  position: relative;
+  background: var(--app-gradient-primary);
+  color: var(--app-text-dark);
+  border: none;
+  border-radius: var(--app-radius);
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  transition: var(--app-transition);
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.login-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: 0.5s;
+}
+
+.login-button:active {
+  transform: scale(0.98);
+  background: var(--app-primary-dark);
+}
+
+.login-button:hover::before {
+  left: 100%;
+}
+
+.button-text {
+  transition: opacity 0.3s ease;
+}
+
+.button-loader {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--app-text-dark);
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--app-transition);
+  animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.login-button.loading .button-text {
+  opacity: 0;
+}
+
+.login-button.loading .button-loader {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Social Login */
+.social-login {
+  margin-top: 2.5rem;
+  text-align: center;
+}
+
+.social-login p {
+  color: var(--app-text-secondary);
+  font-size: 0.9rem;
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.social-login p::before,
+.social-login p::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 30%;
+  height: 1px;
+  background-color: var(--app-border);
+}
+
+.social-login p::before {
+  left: 0;
+}
+
+.social-login p::after {
+  right: 0;
+}
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1.25rem;
+}
+
+.social-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.social-button:active {
+  transform: scale(0.95);
+}
+
+.social-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.social-button.google {
+  background-color: #fff;
+}
+
+.social-button.facebook {
+  background-color: #1877F2;
+}
+
+.social-button.apple {
+  background-color: #fff;
+}
+
+/* Auth Link */
+.auth-link {
+  text-align: center;
+  margin-top: 2rem;
+  color: var(--app-text-secondary);
+  font-size: 0.95rem;
+}
+
+.auth-link a {
+  color: var(--app-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--app-transition);
+}
+
+.auth-link a:hover {
+  color: var(--app-primary-light);
+  text-decoration: underline;
+}
+
+/* Premium badge */
+.premium-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, var(--app-accent), #00b199);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--app-text-dark);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(0, 226, 195, 0.3);
+  z-index: 10;
+}
+
+/* Bottom safe area for iOS */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .auth-container {
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Mobile-first adjustments */
+@media (min-width: 768px) {
+  /* For tablets and larger */
+  .auth-container {
+    justify-content: center;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  
+  .auth-form {
+    max-width: 420px;
+    background-color: var(--app-card);
+    border-radius: var(--app-radius);
+    padding: 2.5rem 2rem;
+    box-shadow: var(--app-shadow);
+    border: 1px solid var(--app-border);
+    position: relative;
+    background: var(--app-gradient-card);
+  }
+  
+  .logo-container {
+    margin: 0 0 2rem;
+  }
+}
+
+/* Fix for Samsung/Android phones with holes/notches */
+@supports (padding-top: constant(safe-area-inset-top)) {
+  body::before {
+    height: calc(20px + constant(safe-area-inset-top));
+  }
+  
+  .auth-container {
+    padding-top: calc(40px + constant(safe-area-inset-top));
+  }
+}
+
+/* iOS status bar styles */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body::before {
+    height: calc(20px + env(safe-area-inset-top));
+  }
+  
+  .auth-container {
+    padding-top: calc(40px + env(safe-area-inset-top));
+  }
+}
